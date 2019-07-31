@@ -262,6 +262,11 @@ function seedMaliciousArticle(db, user, article) {
     )
 }
 
+function makeAuthHeader(user) {
+   const token = Buffer.from(`${user.user_name}:${user.password}`).toString('base64')
+    return `Basic ${token}`
+   }
+
 module.exports = {
   makeUsersArray,
   makeArticlesArray,
@@ -269,7 +274,7 @@ module.exports = {
   makeExpectedArticleComments,
   makeMaliciousArticle,
   makeCommentsArray,
-
+  makeAuthHeader,
   makeArticlesFixtures,
   cleanTables,
   seedArticlesTables,
