@@ -3,6 +3,7 @@ const app = require("../src/app");
 const helpers = require("./test-helpers");
 const jwt = require('jsonwebtoken')
 
+
 describe("Auth Endpoints", function() {
   let db;
 
@@ -23,6 +24,7 @@ describe("Auth Endpoints", function() {
 
   afterEach("cleanup", () => helpers.cleanTables(db));
 
+  
   describe(`POST /api/auth/login`, () => {
     beforeEach("insert users", () => helpers.seedUsers(db, testUsers));
 
@@ -69,6 +71,7 @@ describe("Auth Endpoints", function() {
         {user_id: testUser.id}, //payload
         process.env.JWT_SECRET,
         { subject: testUser.user_name,
+          expiresIn: process.env.JWT_EXPIRY,
         algorithm: 'HS256'}
       )
       return supertest(app)
@@ -79,4 +82,19 @@ describe("Auth Endpoints", function() {
       })
     })
   });
+  describe('POST /api/auth/refresh', ()=>{
+    beforeEach('insert users', ()=> helpers.seedUsers(db, testUsers))
+    it('responds 200 and JWT auth token using secret', ()=> {
+      const expectedToken = jwt.sign(
+        {user_id: testUser.id}, process.env.JWT_SECRET,
+        {subject: testUser.user_name,
+        expiresIn: process.env.JWT_EXPIRY,
+      algorithm: 'HS256'}
+      )
+      return supertest(app)
+      .post('/api/auth/refresh')
+      .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+      .expect(200, {authToken: expectedToken})
+    })
+  })
 });
